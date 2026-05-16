@@ -1,5 +1,6 @@
 from requests import Response
 
+from src.main.api.configs.business_limits import get_limits
 from src.main.api.foundation.endpoint import Endpoint
 from src.main.api.foundation.requesters.crud_requester import CrudRequester
 from src.main.api.foundation.requesters.validated_crud_requester import ValidatedCrudRequester
@@ -44,11 +45,12 @@ class UserSteps(BaseSteps):
         ).post()
 
     def fund_account(self, user: CreateUserRequest, account_id: int, target_amount: float) -> None:
+        limits = get_limits()
         remaining = target_amount
         while remaining > 0:
-            chunk = min(remaining, 9000.0)
-            if chunk < 1000:
-                chunk = 1000.0
+            chunk = min(remaining, limits.deposit_max)
+            if chunk < limits.deposit_min:
+                chunk = limits.deposit_min
             self.deposit(user, account_id, chunk)
             remaining -= chunk
 
@@ -146,6 +148,16 @@ class UserSteps(BaseSteps):
             self._user_headers(user),
             Endpoint.CREDIT_REQUEST,
             ResponseSpecs.request_not_found(),
+        ).post(body)
+
+    def credit_request_expect_bad(
+        self, user: CreateUserRequest, account_id: int, amount: float
+    ) -> Response:
+        body = CreditRequestBody(accountId=account_id, amount=amount)
+        return CrudRequester(
+            self._user_headers(user),
+            Endpoint.CREDIT_REQUEST,
+            ResponseSpecs.request_bad(),
         ).post(body)
 
     def credit_repay(

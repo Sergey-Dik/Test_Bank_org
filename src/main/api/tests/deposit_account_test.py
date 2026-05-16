@@ -2,10 +2,13 @@ import pytest
 from sqlalchemy.orm import Session
 
 from src.main.api.classes.api_manager import ApiManager
+from src.main.api.configs.business_limits import get_limits
 from src.main.api.db.assertions import DbAssertions
 from src.main.api.models.create_account_response import CreateAccountResponse
 from src.main.api.models.create_user_request import CreateUserRequest
 from src.main.api.specs.contract_specs import ContractSpecs
+
+_LIMITS = get_limits()
 
 
 @pytest.mark.api
@@ -34,7 +37,7 @@ class TestDepositAccount:
         ContractSpecs.assert_error_payload(response.json())
 
     @pytest.mark.regression
-    @pytest.mark.parametrize("amount", [1000.0, 9000.0])
+    @pytest.mark.parametrize("amount", [_LIMITS.deposit_min, _LIMITS.deposit_max])
     def test_deposit_account_boundary_success(
         self,
         db_session: Session,
@@ -50,7 +53,10 @@ class TestDepositAccount:
         DbAssertions.assert_account_balance(db_session, user_first_account.id, amount)
 
     @pytest.mark.regression
-    @pytest.mark.parametrize("amount", [999.0, 9001.0])
+    @pytest.mark.parametrize(
+        "amount",
+        [_LIMITS.deposit_min - 1, _LIMITS.deposit_max + 1],
+    )
     def test_deposit_account_boundary_invalid(
         self,
         db_session: Session,

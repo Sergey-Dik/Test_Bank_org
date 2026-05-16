@@ -9,7 +9,12 @@
 ## Data isolation
 
 - `with_unique_username(...)` for new users
-- `fund_account(...)` when deposit per operation is limited (1000–9000)
+- `fund_account(...)` when deposit per operation is limited — uses `get_limits()` from `configs/business_limits.py`
+
+## Business limits
+
+- Defaults: deposit 1000–9000, transfer 500–10000, credit 5000–15000
+- Override keys in `urls.properties`: `deposit.min`, `deposit.max`, etc.
 
 ## DB checks
 
@@ -25,4 +30,4 @@
 ## CI gates
 
 - `ruff check src conftest.py scripts`
-- `pytest` and `pytest -n auto --dist=loadscope` — 35 tests
+- `pytest` and `pytest -n auto --dist=loadscope` — 40 tests

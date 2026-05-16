@@ -2,11 +2,14 @@ import pytest
 from sqlalchemy.orm import Session
 
 from src.main.api.classes.api_manager import ApiManager
+from src.main.api.configs.business_limits import get_limits
 from src.main.api.db.assertions import DbAssertions
 from src.main.api.db.crud.credit_crud import CreditCrudDb
 from src.main.api.models.create_user_request import CreateUserRequest
 from src.main.api.models.credit_request_body import CreditRequestBody
 from src.main.api.specs.contract_specs import ContractSpecs
+
+_LIMITS = get_limits()
 
 
 @pytest.mark.api
@@ -56,3 +59,38 @@ class TestCreditRequest:
         response = api_manager.user_steps.credit_request_not_found(user, second_body)
         ContractSpecs.assert_error_payload(response.json())
         assert CreditCrudDb.count_by_account_id(db_session, second_account.id) == 0
+
+    @pytest.mark.regression
+    @pytest.mark.parametrize("amount", [_LIMITS.credit_min, _LIMITS.credit_max])
+    def test_credit_request_boundary_success(
+        self,
+        db_session: Session,
+        api_manager: ApiManager,
+        credit_secret_user,
+        amount: float,
+    ):
+        user, account = credit_secret_user
+        api_manager.user_steps.fund_account(user, account.id, amount)
+        body = CreditRequestBody(accountId=account.id, amount=amount, termMonths=12)
+        credit = api_manager.user_steps.credit_request(user, body)
+        assert credit.creditId > 0
+        DbAssertions.assert_credit_exists(db_session, credit.creditId)
+
+    @pytest.mark.regression
+    @pytest.mark.parametrize(
+        "amount",
+        [_LIMITS.credit_min - 1, _LIMITS.credit_max + 1],
+    )
+    def test_credit_request_boundary_invalid(
+        self,
+        db_session: Session,
+        api_manager: ApiManager,
+        credit_secret_user,
+        amount: float,
+    ):
+        user, account = credit_secret_user
+        before = CreditCrudDb.count_by_account_id(db_session, account.id)
+        api_manager.user_steps.fund_account(user, account.id, get_limits().credit_min)
+        response = api_manager.user_steps.credit_request_expect_bad(user, account.id, amount)
+        ContractSpecs.assert_error_payload(response.json())
+        assert CreditCrudDb.count_by_account_id(db_session, account.id) == before

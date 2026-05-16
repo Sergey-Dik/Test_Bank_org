@@ -3,3 +3,11 @@
 
 backendUrl=http://localhost:4111/api
 dataBaseUrl=postgresql+psycopg2://symfony:password@localhost:5432/symfony_db
+
+# Optional business limits (defaults match project_requirements.md)
+# deposit.min=1000
+# deposit.max=9000
+# transfer.min=500
+# transfer.max=10000
+# credit.min=5000
+# credit.max=15000

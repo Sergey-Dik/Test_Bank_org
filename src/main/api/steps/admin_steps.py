@@ -55,3 +55,10 @@ class AdminSteps(BaseSteps):
             ResponseSpecs.request_ok(),
         ).get()
         return response.json()
+
+    def list_users_unauthorized(self):
+        return CrudRequester(
+            RequestsSpecs.unauth_headers(),
+            Endpoint.ADMIN_LIST_USERS,
+            ResponseSpecs.request_unauthorized(),
+        ).get()

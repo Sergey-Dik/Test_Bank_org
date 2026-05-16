@@ -33,7 +33,10 @@ make allure-serve
 
 ## Tests
 
-**35 tests** (smoke — 6). Integration tests mutate data in the shared DB; use a dedicated test database.
+**40 tests** (smoke — 8). Integration tests mutate data in the shared DB; use a dedicated test database.
+
+Business limits (deposit / transfer / credit) are defined in `src/main/api/configs/business_limits.py`
+and can be overridden via `resources/urls.properties`.
 
 ## API coverage (Swagger ↔ framework)
 
@@ -41,13 +44,12 @@ make allure-serve
 |---------|-------|-------|
 | `POST /auth/token/login` | `AdminSteps.login_user` | `login_user_test` |
 | `POST /admin/create` | `AdminSteps.create_user` | `create_user_test` |
-| `GET /admin/users` | `AdminSteps.list_users` | `admin_list_users_test` |
+| `GET /admin/users` | `AdminSteps.list_users` | `admin_list_users_test` (+ 401 without token) |
 | `DELETE /admin/users/{id}` | `AdminSteps.delete_user` | teardown in `object_fixture` only |
 | `POST /account/create` | `UserSteps.create_account` | `create_account_test` |
 | `POST /account/deposit` | `UserSteps.deposit` | `deposit_account_test` |
 | `POST /account/transfer` | `UserSteps.transfer` | `transfer_account_test` (own accounts) |
-| `GET /account/transactions/{id}` | — | planned (stage B) |
-| `POST /credit/request` | `UserSteps.credit_request` | `credit_request_test` |
+| `POST /credit/request` | `UserSteps.credit_request` | `credit_request_test` (+ amount boundaries) |
 | `GET /credit/history` | `UserSteps.credit_history` | `credit_history_test` |
 | `POST /credit/repay` | `UserSteps.credit_repay` | `credit_repay_test` |
 
