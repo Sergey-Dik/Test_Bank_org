@@ -1,0 +1,30 @@
+import pytest
+from sqlalchemy.orm import Session
+
+from src.main.api.classes.api_manager import ApiManager
+from src.main.api.db.assertions import DbAssertions
+from src.main.api.models.credit_request_body import CreditRequestBody
+from src.main.api.specs.contract_specs import ContractSpecs
+
+
+@pytest.mark.api
+class TestCreditHistory:
+    @pytest.mark.regression
+    def test_credit_history_unauthorized(self, api_manager: ApiManager):
+        response = api_manager.user_steps.credit_history_unauthorized()
+        ContractSpecs.assert_error_payload(response.json())
+
+    @pytest.mark.regression
+    def test_credit_history_after_request(
+        self,
+        api_manager: ApiManager,
+        credit_secret_user,
+        db_session: Session,
+    ):
+        user, account = credit_secret_user
+        credit = api_manager.user_steps.credit_request(
+            user, CreditRequestBody(accountId=account.id, amount=6000.0)
+        )
+        history = api_manager.user_steps.credit_history(user)
+        assert any(item.creditId == credit.creditId for item in history.credits)
+        DbAssertions.assert_credit_exists(db_session, credit.creditId)

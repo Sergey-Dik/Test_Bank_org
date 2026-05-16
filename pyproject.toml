@@ -1,0 +1,28 @@
+[project]
+name = "test-bank-org"
+version = "0.3.0"
+requires-python = ">=3.12"
+dependencies = [
+    "allure-pytest>=2.13.5",
+    "pydantic>=2.0",
+    "pytest>=8.0",
+    "pytest-xdist>=3.5",
+    "requests>=2.31",
+    "rstr>=3.2",
+    "sqlalchemy>=2.0",
+    "psycopg2-binary>=2.9",
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "api: api tests",
+    "smoke: smoke tests",
+    "regression: regression tests",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
