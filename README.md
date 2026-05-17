@@ -69,3 +69,6 @@ src/main/api/
   fixtures/       # pytest-фикстуры
   specs/          # request/response/contract specs
 ```
+
+## Сдача
+Ветка сдачи: `Xataponx`.
