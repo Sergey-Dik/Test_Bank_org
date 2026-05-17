@@ -118,6 +118,20 @@ class UserSteps(BaseSteps):
             ResponseSpecs.request_bad(),
         ).post(body)
 
+    def transfer_unauthorized(
+        self, from_account_id: int, to_account_id: int, amount: float
+    ) -> Response:
+        body = TransferRequest(
+            fromAccountId=from_account_id,
+            toAccountId=to_account_id,
+            amount=amount,
+        )
+        return CrudRequester(
+            RequestsSpecs.unauth_headers(),
+            Endpoint.TRANSFER,
+            ResponseSpecs.request_unauthorized(),
+        ).post(body)
+
     def credit_request(self, user: CreateUserRequest, body: CreditRequestBody) -> CreditResponse:
         return ValidatedCrudRequester(
             self._user_headers(user),

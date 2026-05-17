@@ -37,9 +37,7 @@ class TestTransferAccount:
         amount: float,
     ):
         first, second = user_two_accounts
-        api_manager.user_steps.fund_account(
-            create_user_request, first.id, _LIMITS.transfer_max
-        )
+        api_manager.user_steps.fund_account(create_user_request, first.id, _LIMITS.transfer_max)
         api_manager.user_steps.transfer(create_user_request, first.id, second.id, amount)
         DbAssertions.assert_account_balance(db_session, second.id, amount)
 
@@ -57,12 +55,27 @@ class TestTransferAccount:
         amount: float,
     ):
         first, second = user_two_accounts
-        api_manager.user_steps.fund_account(
-            create_user_request, first.id, _LIMITS.transfer_max
-        )
+        api_manager.user_steps.fund_account(create_user_request, first.id, _LIMITS.transfer_max)
         before = second.balance
         response = api_manager.user_steps.transfer_expect_bad(
             create_user_request, first.id, second.id, amount
+        )
+        ContractSpecs.assert_error_payload(response.json())
+        DbAssertions.assert_account_balance(db_session, second.id, before)
+
+    @pytest.mark.regression
+    def test_transfer_account_unauthorized(
+        self,
+        db_session: Session,
+        api_manager: ApiManager,
+        create_user_request: CreateUserRequest,
+        user_two_accounts,
+    ):
+        first, second = user_two_accounts
+        api_manager.user_steps.fund_account(create_user_request, first.id, _LIMITS.transfer_min)
+        before = second.balance
+        response = api_manager.user_steps.transfer_unauthorized(
+            first.id, second.id, _LIMITS.transfer_min
         )
         ContractSpecs.assert_error_payload(response.json())
         DbAssertions.assert_account_balance(db_session, second.id, before)

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from src.main.api.classes.api_manager import ApiManager
 from src.main.api.db.assertions import DbAssertions
+from src.main.api.db.crud.transaction_crud import TransactionCrudDb
 from src.main.api.models.credit_repay_request import CreditRepayRequest
 from src.main.api.models.credit_request_body import CreditRequestBody
 from src.main.api.specs.contract_specs import ContractSpecs
@@ -32,6 +33,7 @@ class TestCreditRepay:
         repay_body = CreditRepayRequest(
             creditId=credit.creditId, accountId=account.id, amount=6000.0
         )
+        transactions_before_repay = TransactionCrudDb.count_by_account_id(db_session, account.id)
         repaid = api_manager.user_steps.credit_repay(user, repay_body)
         assert repaid.amountDeposited == 6000.0
         history = api_manager.user_steps.credit_history(user)
@@ -39,3 +41,6 @@ class TestCreditRepay:
             item.creditId == credit.creditId and item.balance == 0 for item in history.credits
         )
         DbAssertions.assert_credit_exists(db_session, credit.creditId)
+        DbAssertions.assert_transaction_count_at_least(
+            db_session, account.id, transactions_before_repay + 1
+        )

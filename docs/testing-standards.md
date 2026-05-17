@@ -1,33 +1,33 @@
-# Testing standards
+# Стандарты тестирования
 
-## Layers
+## Слои
 
 `tests -> fixtures -> ApiManager -> Steps -> Requesters -> build_api_url / Endpoint -> backend`
 
 Схема: `../Full description of the framework projects/Test_Bank_Architecture.html`
 
-## Data isolation
+## Изоляция данных
 
-- `with_unique_username(...)` for new users
-- `fund_account(...)` when deposit per operation is limited — uses `get_limits()` from `configs/business_limits.py`
+- Для новых пользователей используйте `with_unique_username(...)`
+- Когда есть лимит суммы пополнения за одну операцию, используйте `fund_account(...)` (внутри `get_limits()` из `configs/business_limits.py`)
 
-## Business limits
+## Бизнес-лимиты
 
-- Defaults: deposit 1000–9000, transfer 500–10000, credit 5000–15000
-- Override keys in `urls.properties`: `deposit.min`, `deposit.max`, etc.
+- Значения по умолчанию: deposit 1000–9000, transfer 500–10000, credit 5000–15000
+- Переопределение в `urls.properties`: `deposit.min`, `deposit.max` и т.д.
 
-## DB checks
+## Проверки в БД
 
-- Models aligned with PostgreSQL: `user`, `account`, `credit`, `transaction`
-- `transaction_type`, `to_account_id`, `from_account_id`
-- Use `DbAssertions` / CRUD, not raw SQL
+- Модели синхронизированы с PostgreSQL: `user`, `account`, `credit`, `transaction`
+- Для `transaction` используйте поля `transaction_type`, `to_account_id`, `from_account_id`
+- Для проверок используйте `DbAssertions` / CRUD, а не сырой SQL
 
-## Contracts
+## Контракты
 
-- `ContractSpecs` on negative API responses
-- Separate Pydantic models per API shape (e.g. `CreditRepayResponse`)
+- Для негативных ответов API используйте `ContractSpecs`
+- Для разных форм ответа держите отдельные Pydantic-модели (например, `CreditRepayResponse`)
 
-## CI gates
+## CI-гейты
 
 - `ruff check src conftest.py scripts`
-- `pytest` and `pytest -n auto --dist=loadscope` — 40 tests
+- `pytest` и `pytest -n auto --dist=loadscope` — 40 тестов
