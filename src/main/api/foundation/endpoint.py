@@ -1,5 +1,6 @@
 """Facade: re-exports endpoint configurations for steps and requesters."""
 
+from src.main.api.foundation.crud_endpoint import CrudEndpoint
 from src.main.api.foundation.endpoints.account import AccountEndpoints
 from src.main.api.foundation.endpoints.admin import AdminEndpoints
 from src.main.api.foundation.endpoints.auth import AuthEndpoints
@@ -20,4 +21,4 @@ class Endpoint:
     CREDIT_HISTORY = CreditEndpoints.HISTORY
 
 
-__all__ = ["Endpoint", "EndpointConfiguration"]
+__all__ = ["CrudEndpoint", "Endpoint", "EndpointConfiguration"]

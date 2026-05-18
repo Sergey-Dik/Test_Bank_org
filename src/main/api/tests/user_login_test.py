@@ -4,7 +4,6 @@ from src.main.api.classes.api_manager import ApiManager
 from src.main.api.db.assertions import DbAssertions
 from src.main.api.models.create_user_request import CreateUserRequest
 from src.main.api.models.login_user_request import LoginUserRequest
-from src.main.api.specs.contract_specs import ContractSpecs
 
 
 @pytest.mark.api
@@ -25,6 +24,5 @@ class TestUserLogin:
     @pytest.mark.regression
     def test_login_user_invalid(self, api_manager: ApiManager, db_session):
         login_user_request = LoginUserRequest(username="Ma", password="Pas!sw0rd")
-        response = api_manager.user_steps.login_invalid(login_user_request)
-        ContractSpecs.assert_error_payload(response.json())
+        api_manager.user_steps.login_invalid(login_user_request)
         DbAssertions.assert_user_not_exists(db_session, login_user_request.username)

@@ -4,7 +4,7 @@
 
 `tests -> fixtures -> ApiManager -> Steps -> Requesters -> build_api_url / Endpoint -> backend`
 
-Схема: `../Full description of the framework projects/Test_Bank_Architecture.html`
+Параллельно для проверок БД: `db_session -> DbAssertions / CRUD -> PostgreSQL`.
 
 ## Изоляция данных
 
@@ -24,7 +24,7 @@
 
 ## Контракты
 
-- Для негативных ответов API используйте `ContractSpecs`
+- Для негативных ответов API используйте step-методы (`*_unauthorized`, `*_expect_bad`); проверка тела ошибки — в `BaseSteps._assert_error_contract` / `ContractSpecs` внутри steps
 - Для разных форм ответа держите отдельные Pydantic-модели (например, `CreditRepayResponse`)
 
 ## CI-гейты

@@ -4,15 +4,13 @@ from sqlalchemy.orm import Session
 from src.main.api.classes.api_manager import ApiManager
 from src.main.api.db.assertions import DbAssertions
 from src.main.api.models.credit_request_body import CreditRequestBody
-from src.main.api.specs.contract_specs import ContractSpecs
 
 
 @pytest.mark.api
 class TestCreditHistory:
     @pytest.mark.regression
     def test_credit_history_unauthorized(self, api_manager: ApiManager):
-        response = api_manager.user_steps.credit_history_unauthorized()
-        ContractSpecs.assert_error_payload(response.json())
+        api_manager.user_steps.credit_history_unauthorized()
 
     @pytest.mark.regression
     def test_credit_history_after_request(

@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from src.main.api.classes.api_manager import ApiManager
 from src.main.api.db.assertions import DbAssertions
 from src.main.api.models.create_user_request import CreateUserRequest
-from src.main.api.specs.contract_specs import ContractSpecs
 
 
 @pytest.mark.api
@@ -24,8 +23,7 @@ class TestCreateAccount:
 
     @pytest.mark.regression
     def test_admin_cannot_create_bank_account(self, api_manager: ApiManager):
-        response = api_manager.user_steps.create_account_as_admin_expect_forbidden()
-        ContractSpecs.assert_error_payload(response.json())
+        api_manager.user_steps.create_account_as_admin_expect_forbidden()
 
     @pytest.mark.regression
     def test_max_two_accounts_per_user(
@@ -36,7 +34,6 @@ class TestCreateAccount:
     ):
         first = api_manager.user_steps.create_account(create_user_request)
         second = api_manager.user_steps.create_account(create_user_request)
-        conflict = api_manager.user_steps.create_account_expect_conflict(create_user_request)
-        ContractSpecs.assert_error_payload(conflict.json())
+        api_manager.user_steps.create_account_expect_conflict(create_user_request)
         DbAssertions.assert_account_exists(db_session, first.id)
         DbAssertions.assert_account_exists(db_session, second.id)
