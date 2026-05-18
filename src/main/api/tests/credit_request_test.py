@@ -4,8 +4,11 @@ from sqlalchemy.orm import Session
 from src.main.api.classes.api_manager import ApiManager
 from src.main.api.db.assertions import DbAssertions
 from src.main.api.db.crud.credit_crud import CreditCrudDb
+from src.main.api.generators.amount_generator import random_credit_amount
 from src.main.api.models.create_user_request import CreateUserRequest
 from src.main.api.models.credit_request_body import CreditRequestBody
+from src.main.api.models.funded_credit_secret_user_context import FundedCreditSecretUserContext
+from src.main.api.models.user_account_context import UserAccountContext
 
 
 @pytest.mark.api
@@ -15,17 +18,19 @@ class TestCreditRequest:
         self,
         db_session: Session,
         api_manager: ApiManager,
-        credit_secret_user,
+        credit_secret_user: UserAccountContext,
     ):
-        user, account = credit_secret_user
-        body = CreditRequestBody(accountId=account.id, amount=6000.0, termMonths=12)
-        credit = api_manager.user_steps.credit_request(user, body)
-        assert credit.creditId > 0
+        amount = random_credit_amount()
+        body = CreditRequestBody(
+            accountId=credit_secret_user.account.id, amount=amount, termMonths=12
+        )
+        credit = api_manager.user_steps.credit_request(credit_secret_user.user, body)
+        assert credit.creditId > 0, "Credit id should be positive"
         DbAssertions.assert_credit_exists(db_session, credit.creditId)
 
     @pytest.mark.regression
     def test_credit_request_unauthorized(self, api_manager: ApiManager, user_first_account):
-        body = CreditRequestBody(accountId=user_first_account.id, amount=6000.0)
+        body = CreditRequestBody(accountId=user_first_account.id, amount=random_credit_amount())
         api_manager.user_steps.credit_request_unauthorized(body)
 
     @pytest.mark.regression
@@ -35,7 +40,7 @@ class TestCreditRequest:
         create_user_request: CreateUserRequest,
         user_first_account,
     ):
-        body = CreditRequestBody(accountId=user_first_account.id, amount=6000.0)
+        body = CreditRequestBody(accountId=user_first_account.id, amount=random_credit_amount())
         api_manager.user_steps.credit_request_forbidden(create_user_request, body)
 
     @pytest.mark.regression
@@ -43,30 +48,28 @@ class TestCreditRequest:
         self,
         db_session: Session,
         api_manager: ApiManager,
-        credit_secret_user,
+        credit_secret_two_accounts_with_credit,
     ):
-        user, first_account = credit_secret_user
-        second_account = api_manager.user_steps.create_account(user)
-        first_body = CreditRequestBody(accountId=first_account.id, amount=6000.0)
-        api_manager.user_steps.credit_request(user, first_body)
-        second_body = CreditRequestBody(accountId=second_account.id, amount=7000.0)
-        api_manager.user_steps.credit_request_not_found(user, second_body)
-        assert CreditCrudDb.count_by_account_id(db_session, second_account.id) == 0
+        ctx = credit_secret_two_accounts_with_credit
+        api_manager.user_steps.request_credit_on_second_account_expect_not_found(
+            ctx.user, ctx.second_account.id, random_credit_amount()
+        )
+        assert CreditCrudDb.count_by_account_id(db_session, ctx.second_account.id) == 0, (
+            "Second account must not have a credit record"
+        )
 
     @pytest.mark.regression
-    @pytest.mark.parametrize("amount", [5000.0, 15000.0])
+    @pytest.mark.parametrize("funded_credit_secret_user", [5000.0, 15000.0], indirect=True)
     def test_credit_request_boundary_success(
         self,
         db_session: Session,
         api_manager: ApiManager,
-        credit_secret_user,
-        amount: float,
+        funded_credit_secret_user: FundedCreditSecretUserContext,
     ):
-        user, account = credit_secret_user
-        api_manager.user_steps.fund_account(user, account.id, amount)
-        body = CreditRequestBody(accountId=account.id, amount=amount, termMonths=12)
-        credit = api_manager.user_steps.credit_request(user, body)
-        assert credit.creditId > 0
+        ctx = funded_credit_secret_user
+        body = CreditRequestBody(accountId=ctx.account.id, amount=ctx.funded_amount, termMonths=12)
+        credit = api_manager.user_steps.credit_request(ctx.user, body)
+        assert credit.creditId > 0, "Credit id should be positive"
         DbAssertions.assert_credit_exists(db_session, credit.creditId)
 
     @pytest.mark.regression
@@ -75,11 +78,12 @@ class TestCreditRequest:
         self,
         db_session: Session,
         api_manager: ApiManager,
-        credit_secret_user,
+        credit_secret_user_funded_min: UserAccountContext,
         amount: float,
     ):
-        user, account = credit_secret_user
-        before = CreditCrudDb.count_by_account_id(db_session, account.id)
-        api_manager.user_steps.fund_account(user, account.id, 5000.0)
-        api_manager.user_steps.credit_request_expect_bad(user, account.id, amount)
-        assert CreditCrudDb.count_by_account_id(db_session, account.id) == before
+        ctx = credit_secret_user_funded_min
+        before = CreditCrudDb.count_by_account_id(db_session, ctx.account.id)
+        api_manager.user_steps.credit_request_expect_bad(ctx.user, ctx.account.id, amount)
+        assert CreditCrudDb.count_by_account_id(db_session, ctx.account.id) == before, (
+            "Invalid credit request must not create a credit record"
+        )

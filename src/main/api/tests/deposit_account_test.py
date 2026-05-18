@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from src.main.api.classes.api_manager import ApiManager
 from src.main.api.db.assertions import DbAssertions
+from src.main.api.generators.amount_generator import random_deposit_amount
 from src.main.api.models.create_account_response import CreateAccountResponse
 from src.main.api.models.create_user_request import CreateUserRequest
 
@@ -17,11 +18,11 @@ class TestDepositAccount:
         create_user_request: CreateUserRequest,
         user_first_account: CreateAccountResponse,
     ):
-        amount = 1500.0
+        amount = random_deposit_amount()
         response = api_manager.user_steps.deposit(
             create_user_request, user_first_account.id, amount
         )
-        assert response.balance == amount
+        assert response.balance == amount, "Account balance should match deposit amount"
         DbAssertions.assert_account_balance(db_session, user_first_account.id, amount)
         DbAssertions.assert_transaction_count_at_least(
             db_session, user_first_account.id, 1, "deposit"
@@ -29,7 +30,7 @@ class TestDepositAccount:
 
     @pytest.mark.regression
     def test_deposit_account_invalid(self, api_manager: ApiManager, user_first_account):
-        api_manager.user_steps.deposit_unauthorized(user_first_account.id, 1500.0)
+        api_manager.user_steps.deposit_unauthorized(user_first_account.id, random_deposit_amount())
 
     @pytest.mark.regression
     @pytest.mark.parametrize("amount", [1000.0, 9000.0])
@@ -44,7 +45,7 @@ class TestDepositAccount:
         response = api_manager.user_steps.deposit(
             create_user_request, user_first_account.id, amount
         )
-        assert response.balance == amount
+        assert response.balance == amount, "Account balance should match deposit amount"
         DbAssertions.assert_account_balance(db_session, user_first_account.id, amount)
 
     @pytest.mark.regression

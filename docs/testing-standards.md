@@ -10,6 +10,8 @@
 
 - Для новых пользователей используйте `with_unique_username(...)`
 - Когда есть лимит суммы пополнения за одну операцию, используйте `fund_account(...)` (внутри `get_limits()` из `configs/business_limits.py`)
+- Для обычных сумм вне границ используйте `generators/amount_generator.py`; границы — только `pytest.mark.parametrize`
+- Фикстуры возвращают Pydantic-контексты (`UserAccountContext`, `CreditReadyContext` и т.д.), не tuple
 
 ## Бизнес-лимиты
 
@@ -30,4 +32,4 @@
 ## CI-гейты
 
 - `ruff check src conftest.py scripts`
-- `pytest` и `pytest -n auto --dist=loadscope` — 40 тестов
+- `pytest` и `pytest -n auto --dist=loadscope` — 42 теста

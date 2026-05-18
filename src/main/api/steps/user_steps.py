@@ -72,9 +72,7 @@ class UserSteps(BaseSteps):
             ResponseSpecs.request_ok(),
         ).post(body)
 
-    def deposit_expect_bad(
-        self, user: CreateUserRequest, account_id: int, amount: float
-    ) -> None:
+    def deposit_expect_bad(self, user: CreateUserRequest, account_id: int, amount: float) -> None:
         body = DepositRequest(accountId=account_id, amount=amount)
         response = DepositRequester(
             self._user_headers(user),
@@ -159,9 +157,7 @@ class UserSteps(BaseSteps):
         ).post(body)
         self._assert_error_contract(response)
 
-    def credit_request_forbidden(
-        self, user: CreateUserRequest, body: CreditRequestBody
-    ) -> None:
+    def credit_request_forbidden(self, user: CreateUserRequest, body: CreditRequestBody) -> None:
         response = Requester(
             self._user_headers(user),
             Endpoint.CREDIT_REQUEST,
@@ -169,9 +165,7 @@ class UserSteps(BaseSteps):
         ).post(body)
         self._assert_error_contract(response)
 
-    def credit_request_not_found(
-        self, user: CreateUserRequest, body: CreditRequestBody
-    ) -> None:
+    def credit_request_not_found(self, user: CreateUserRequest, body: CreditRequestBody) -> None:
         response = Requester(
             self._user_headers(user),
             Endpoint.CREDIT_REQUEST,
@@ -189,6 +183,12 @@ class UserSteps(BaseSteps):
             ResponseSpecs.request_bad(),
         ).post(body)
         self._assert_error_contract(response)
+
+    def request_credit_on_second_account_expect_not_found(
+        self, user: CreateUserRequest, second_account_id: int, amount: float
+    ) -> None:
+        body = CreditRequestBody(accountId=second_account_id, amount=amount)
+        self.credit_request_not_found(user, body)
 
     def credit_repay(
         self, user: CreateUserRequest, body: CreditRepayRequest

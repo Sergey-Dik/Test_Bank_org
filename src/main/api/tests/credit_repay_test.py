@@ -3,42 +3,47 @@ from sqlalchemy.orm import Session
 
 from src.main.api.classes.api_manager import ApiManager
 from src.main.api.db.assertions import DbAssertions
-from src.main.api.db.crud.transaction_crud import TransactionCrudDb
+from src.main.api.generators.amount_generator import random_credit_amount
+from src.main.api.models.credit_ready_context import CreditReadyContext
 from src.main.api.models.credit_repay_request import CreditRepayRequest
-from src.main.api.models.credit_request_body import CreditRequestBody
+from src.main.api.models.user_account_context import UserAccountContext
 
 
 @pytest.mark.api
 class TestCreditRepay:
     @pytest.mark.regression
-    def test_credit_repay_unauthorized(self, api_manager: ApiManager, credit_secret_user):
-        _, account = credit_secret_user
-        body = CreditRepayRequest(creditId=1, accountId=account.id, amount=6000.0)
+    def test_credit_repay_unauthorized(
+        self, api_manager: ApiManager, credit_secret_user: UserAccountContext
+    ):
+        body = CreditRepayRequest(
+            creditId=1,
+            accountId=credit_secret_user.account.id,
+            amount=random_credit_amount(),
+        )
         api_manager.user_steps.credit_repay_unauthorized(body)
 
     @pytest.mark.smoke
     def test_credit_request_and_repay(
         self,
         api_manager: ApiManager,
-        credit_secret_user,
+        credit_ready_for_repay: CreditReadyContext,
         db_session: Session,
     ):
-        user, account = credit_secret_user
-        api_manager.user_steps.deposit(user, account.id, 6000.0)
-        credit = api_manager.user_steps.credit_request(
-            user, CreditRequestBody(accountId=account.id, amount=6000.0)
+        ctx = credit_ready_for_repay
+        repaid = api_manager.user_steps.credit_repay(ctx.user, ctx.repay_body)
+        assert repaid.amountDeposited == ctx.repay_body.amount, (
+            "Repay should deposit the full credit amount"
         )
-        repay_body = CreditRepayRequest(
-            creditId=credit.creditId, accountId=account.id, amount=6000.0
+        history = api_manager.user_steps.credit_history(ctx.user)
+        credit_in_history = next(
+            (item for item in history.credits if item.creditId == ctx.credit.creditId),
+            None,
         )
-        transactions_before_repay = TransactionCrudDb.count_by_account_id(db_session, account.id)
-        repaid = api_manager.user_steps.credit_repay(user, repay_body)
-        assert repaid.amountDeposited == 6000.0
-        history = api_manager.user_steps.credit_history(user)
-        assert any(
-            item.creditId == credit.creditId and item.balance == 0 for item in history.credits
+        assert credit_in_history is not None, f"Credit {ctx.credit.creditId} not found in history"
+        assert credit_in_history.balance == 0, (
+            f"Expected zero balance after repay, got {credit_in_history.balance}"
         )
-        DbAssertions.assert_credit_exists(db_session, credit.creditId)
+        DbAssertions.assert_credit_exists(db_session, ctx.credit.creditId)
         DbAssertions.assert_transaction_count_at_least(
-            db_session, account.id, transactions_before_repay + 1
+            db_session, ctx.account.id, ctx.transactions_before_repay + 1
         )
