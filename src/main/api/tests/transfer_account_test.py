@@ -2,8 +2,9 @@ import pytest
 from sqlalchemy.orm import Session
 
 from src.main.api.classes.api_manager import ApiManager
+from src.main.api.configs.business_limits import get_limits
 from src.main.api.db.assertions import DbAssertions
-from src.main.api.generators.amount_generator import random_deposit_amount, random_transfer_amount
+from src.main.api.generators.amount_generator import random_transfer_amount
 from src.main.api.generators.model_generator import RandomModelGenerator
 from src.main.api.generators.test_data_strategy import with_unique_username
 from src.main.api.models.create_user_request import CreateUserRequest
@@ -60,7 +61,8 @@ class TestTransferAccount:
         sender = with_unique_username(RandomModelGenerator.generate(CreateUserRequest))
         api_manager.admin_steps.create_user(sender)
         sender_account = api_manager.user_steps.create_account(sender)
-        api_manager.user_steps.deposit(sender, sender_account.id, random_deposit_amount())
+        limits = get_limits()
+        api_manager.user_steps.fund_account(sender, sender_account.id, limits.transfer_max)
 
         recipient = with_unique_username(RandomModelGenerator.generate(CreateUserRequest))
         api_manager.admin_steps.create_user(recipient)
