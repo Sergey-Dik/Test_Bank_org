@@ -15,14 +15,20 @@ from src.main.api.models.credit_two_accounts_context import CreditTwoAccountsCon
 from src.main.api.models.credit_user_context import CreditUserContext
 from src.main.api.models.funded_credit_secret_user_context import FundedCreditSecretUserContext
 from src.main.api.models.user_account_context import UserAccountContext
+from src.main.api.tests.setup_helpers import (
+    setup_account,
+    setup_credit_request,
+    setup_fund_account,
+    setup_user,
+)
 
 
 @pytest.fixture
 def credit_secret_user(api_manager: ApiManager) -> UserAccountContext:
     user_request = with_unique_username(RandomModelGenerator.generate(CreateUserRequest))
     user_request.role = "ROLE_CREDIT_SECRET"
-    api_manager.admin_steps.create_user(user_request)
-    account = api_manager.user_steps.create_account(user_request)
+    setup_user(api_manager, user_request)
+    account = setup_account(api_manager, user_request)
     return UserAccountContext(user=user_request, account=account)
 
 
@@ -31,8 +37,8 @@ def funded_credit_secret_user(
     credit_secret_user: UserAccountContext, api_manager: ApiManager, request
 ) -> FundedCreditSecretUserContext:
     amount = request.param
-    api_manager.user_steps.fund_account(
-        credit_secret_user.user, credit_secret_user.account.id, amount
+    setup_fund_account(
+        api_manager, credit_secret_user.user, credit_secret_user.account.id, amount
     )
     return FundedCreditSecretUserContext.from_user_account(credit_secret_user, amount)
 
@@ -42,8 +48,8 @@ def credit_secret_user_funded_min(
     credit_secret_user: UserAccountContext, api_manager: ApiManager
 ) -> UserAccountContext:
     limits = get_limits()
-    api_manager.user_steps.fund_account(
-        credit_secret_user.user, credit_secret_user.account.id, limits.credit_min
+    setup_fund_account(
+        api_manager, credit_secret_user.user, credit_secret_user.account.id, limits.credit_min
     )
     return credit_secret_user
 
@@ -53,7 +59,8 @@ def credit_secret_user_with_credit(
     credit_secret_user: UserAccountContext, api_manager: ApiManager
 ) -> CreditUserContext:
     amount = random_credit_amount()
-    credit = api_manager.user_steps.credit_request(
+    credit = setup_credit_request(
+        api_manager,
         credit_secret_user.user,
         CreditRequestBody(accountId=credit_secret_user.account.id, amount=amount, termMonths=12),
     )
@@ -64,9 +71,10 @@ def credit_secret_user_with_credit(
 def credit_secret_two_accounts_with_credit(
     credit_secret_user: UserAccountContext, api_manager: ApiManager
 ) -> CreditTwoAccountsContext:
-    second_account = api_manager.user_steps.create_account(credit_secret_user.user)
+    second_account = setup_account(api_manager, credit_secret_user.user)
     amount = random_credit_amount()
-    credit = api_manager.user_steps.credit_request(
+    credit = setup_credit_request(
+        api_manager,
         credit_secret_user.user,
         CreditRequestBody(accountId=credit_secret_user.account.id, amount=amount, termMonths=12),
     )
@@ -85,10 +93,9 @@ def credit_ready_for_repay(
     db_session: Session,
 ) -> CreditReadyContext:
     amount = random_credit_amount()
-    api_manager.user_steps.fund_account(
-        credit_secret_user.user, credit_secret_user.account.id, amount
-    )
-    credit = api_manager.user_steps.credit_request(
+    setup_fund_account(api_manager, credit_secret_user.user, credit_secret_user.account.id, amount)
+    credit = setup_credit_request(
+        api_manager,
         credit_secret_user.user,
         CreditRequestBody(accountId=credit_secret_user.account.id, amount=amount, termMonths=12),
     )

@@ -9,6 +9,8 @@ from src.main.api.generators.model_generator import RandomModelGenerator
 from src.main.api.generators.test_data_strategy import with_unique_username
 from src.main.api.models.create_user_request import CreateUserRequest
 from src.main.api.models.user_two_accounts_context import UserTwoAccountsContext
+from src.main.api.tests.api_assertions import assert_bad_request, assert_ok, assert_unauthorized
+from src.main.api.tests.setup_helpers import setup_account, setup_fund_account, setup_user
 
 
 @pytest.mark.api
@@ -22,7 +24,8 @@ class TestTransferAccount:
     ):
         ctx = user_two_accounts_funded
         amount = random_transfer_amount()
-        api_manager.user_steps.transfer(ctx.user, ctx.first.id, ctx.second.id, amount)
+        response = api_manager.user_steps.transfer(ctx.user, ctx.first.id, ctx.second.id, amount)
+        assert_ok(response)
         DbAssertions.assert_account_balance(db_session, ctx.second.id, amount)
 
     @pytest.mark.regression
@@ -35,7 +38,8 @@ class TestTransferAccount:
         amount: float,
     ):
         ctx = user_two_accounts_funded
-        api_manager.user_steps.transfer(ctx.user, ctx.first.id, ctx.second.id, amount)
+        response = api_manager.user_steps.transfer(ctx.user, ctx.first.id, ctx.second.id, amount)
+        assert_ok(response)
         DbAssertions.assert_account_balance(db_session, ctx.second.id, amount)
 
     @pytest.mark.regression
@@ -49,7 +53,10 @@ class TestTransferAccount:
     ):
         ctx = user_two_accounts_funded
         before = ctx.second.balance
-        api_manager.user_steps.transfer_expect_bad(ctx.user, ctx.first.id, ctx.second.id, amount)
+        response = api_manager.user_steps.transfer_expect_bad(
+            ctx.user, ctx.first.id, ctx.second.id, amount
+        )
+        assert_bad_request(response)
         DbAssertions.assert_account_balance(db_session, ctx.second.id, before)
 
     @pytest.mark.regression
@@ -59,17 +66,20 @@ class TestTransferAccount:
         api_manager: ApiManager,
     ):
         sender = with_unique_username(RandomModelGenerator.generate(CreateUserRequest))
-        api_manager.admin_steps.create_user(sender)
-        sender_account = api_manager.user_steps.create_account(sender)
+        setup_user(api_manager, sender)
+        sender_account = setup_account(api_manager, sender)
         limits = get_limits()
-        api_manager.user_steps.fund_account(sender, sender_account.id, limits.transfer_max)
+        setup_fund_account(api_manager, sender, sender_account.id, limits.transfer_max)
 
         recipient = with_unique_username(RandomModelGenerator.generate(CreateUserRequest))
-        api_manager.admin_steps.create_user(recipient)
-        recipient_account = api_manager.user_steps.create_account(recipient)
+        setup_user(api_manager, recipient)
+        recipient_account = setup_account(api_manager, recipient)
 
         amount = random_transfer_amount()
-        api_manager.user_steps.transfer(sender, sender_account.id, recipient_account.id, amount)
+        response = api_manager.user_steps.transfer(
+            sender, sender_account.id, recipient_account.id, amount
+        )
+        assert_ok(response)
         DbAssertions.assert_account_balance(db_session, recipient_account.id, amount)
 
     @pytest.mark.regression
@@ -81,7 +91,8 @@ class TestTransferAccount:
     ):
         ctx = user_two_accounts_funded
         before = ctx.second.balance
-        api_manager.user_steps.transfer_unauthorized(
+        response = api_manager.user_steps.transfer_unauthorized(
             ctx.first.id, ctx.second.id, random_transfer_amount()
         )
+        assert_unauthorized(response)
         DbAssertions.assert_account_balance(db_session, ctx.second.id, before)

@@ -7,6 +7,8 @@ from src.main.api.db.crud.user_crud import UserCrudDb
 from src.main.api.generators.model_generator import RandomModelGenerator
 from src.main.api.generators.test_data_strategy import with_unique_username
 from src.main.api.models.create_user_request import CreateUserRequest
+from src.main.api.models.create_user_response import CreateUserResponse
+from src.main.api.tests.api_assertions import assert_bad_request, assert_ok_model
 
 
 @pytest.mark.api
@@ -15,9 +17,11 @@ class TestCreateUser:
     def test_create_user_valid(self, api_manager: ApiManager, db_session: Session):
         create_user_request = with_unique_username(RandomModelGenerator.generate(CreateUserRequest))
         response = api_manager.admin_steps.create_user(create_user_request)
+        result = assert_ok_model(response, CreateUserResponse)
+        api_manager.admin_steps.register_created_user(result)
 
-        assert create_user_request.username == response.username
-        assert create_user_request.role == response.role
+        assert create_user_request.username == result.username, "Username should match request"
+        assert create_user_request.role == result.role, "Role should match request"
         DbAssertions.assert_user_exists(db_session, create_user_request.username)
 
     @pytest.mark.regression
@@ -44,6 +48,7 @@ class TestCreateUser:
         create_user_request = CreateUserRequest(
             username=username, password=password, role="ROLE_USER"
         )
-        api_manager.admin_steps.create_invalid_user(create_user_request)
+        response = api_manager.admin_steps.create_invalid_user(create_user_request)
+        assert_bad_request(response)
         user_from_db = UserCrudDb.get_user_by_username(db_session, username)
-        assert user_from_db is None
+        assert user_from_db is None, "Invalid user must not be stored in DB"

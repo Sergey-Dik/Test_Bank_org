@@ -26,7 +26,7 @@
 
 ## Контракты
 
-- Для негативных ответов API используйте step-методы (`*_unauthorized`, `*_expect_bad`); проверка тела ошибки — в `BaseSteps._assert_error_contract` / `ContractSpecs` внутри steps
+- Steps/requester выполняют HTTP и возвращают `Response`; проверки статуса и контракта — в тестах через `tests/api_assertions.py` (`assert_ok`, `assert_unauthorized`, …)
 - Для разных форм ответа держите отдельные Pydantic-модели (например, `CreditRepayResponse`)
 
 ## CI-гейты

@@ -56,7 +56,6 @@ class Requester(HttpRequester):
             self._record_exchange(method, url, headers, json_body, response)
             attach_response_details(response)
 
-        self.response_spec(response)
         return response
 
     def get(self, path_suffix: str = "") -> Response:
