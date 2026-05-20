@@ -7,7 +7,11 @@ from src.main.api.models.create_user_request import CreateUserRequest
 from src.main.api.models.create_user_response import CreateUserResponse
 from src.main.api.models.credit_request_body import CreditRequestBody
 from src.main.api.models.credit_response import CreditResponse
-from src.main.api.tests.api_assertions import assert_created_model, assert_ok, assert_ok_model
+from src.main.api.utils.helpers.api_assertions import (
+    assert_created_model,
+    assert_ok,
+    assert_ok_model,
+)
 
 
 def setup_user(api_manager: ApiManager, user_request: CreateUserRequest) -> CreateUserResponse:

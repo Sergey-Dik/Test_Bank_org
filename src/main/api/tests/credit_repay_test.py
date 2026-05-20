@@ -9,7 +9,7 @@ from src.main.api.models.credit_ready_context import CreditReadyContext
 from src.main.api.models.credit_repay_request import CreditRepayRequest
 from src.main.api.models.credit_repay_response import CreditRepayResponse
 from src.main.api.models.user_account_context import UserAccountContext
-from src.main.api.tests.api_assertions import assert_ok_model, assert_unauthorized
+from src.main.api.utils.helpers.api_assertions import assert_ok_model, assert_unauthorized
 
 
 @pytest.mark.api

@@ -5,7 +5,7 @@ from src.main.api.classes.api_manager import ApiManager
 from src.main.api.db.assertions import DbAssertions
 from src.main.api.models.create_account_response import CreateAccountResponse
 from src.main.api.models.create_user_request import CreateUserRequest
-from src.main.api.tests.api_assertions import (
+from src.main.api.utils.helpers.api_assertions import (
     assert_conflict,
     assert_created_model,
     assert_forbidden,

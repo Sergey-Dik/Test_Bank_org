@@ -5,7 +5,7 @@ from src.main.api.classes.api_manager import ApiManager
 from src.main.api.db.assertions import DbAssertions
 from src.main.api.models.credit_history_response import CreditHistoryResponse
 from src.main.api.models.credit_user_context import CreditUserContext
-from src.main.api.tests.api_assertions import assert_ok_model, assert_unauthorized
+from src.main.api.utils.helpers.api_assertions import assert_ok_model, assert_unauthorized
 
 
 @pytest.mark.api

@@ -5,7 +5,7 @@ from src.main.api.db.assertions import DbAssertions
 from src.main.api.models.create_user_request import CreateUserRequest
 from src.main.api.models.login_user_request import LoginUserRequest
 from src.main.api.models.login_user_response import LoginUserResponse
-from src.main.api.tests.api_assertions import assert_ok_model, assert_unauthorized
+from src.main.api.utils.helpers.api_assertions import assert_ok_model, assert_unauthorized
 
 
 @pytest.mark.api

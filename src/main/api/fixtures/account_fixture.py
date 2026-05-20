@@ -4,7 +4,7 @@ from src.main.api.classes.api_manager import ApiManager
 from src.main.api.configs.business_limits import get_limits
 from src.main.api.models.create_user_request import CreateUserRequest
 from src.main.api.models.user_two_accounts_context import UserTwoAccountsContext
-from src.main.api.tests.setup_helpers import setup_account, setup_fund_account
+from src.main.api.utils.helpers.setup_helpers import setup_account, setup_fund_account
 
 
 @pytest.fixture
