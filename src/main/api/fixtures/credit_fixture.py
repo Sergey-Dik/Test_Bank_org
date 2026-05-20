@@ -15,7 +15,7 @@ from src.main.api.models.credit_two_accounts_context import CreditTwoAccountsCon
 from src.main.api.models.credit_user_context import CreditUserContext
 from src.main.api.models.funded_credit_secret_user_context import FundedCreditSecretUserContext
 from src.main.api.models.user_account_context import UserAccountContext
-from src.main.api.utils.helpers.setup_helpers import (
+from src.main.api.utils.setup_helpers import (
     setup_account,
     setup_credit_request,
     setup_fund_account,

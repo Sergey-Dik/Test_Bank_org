@@ -10,7 +10,7 @@ from src.main.api.models.credit_request_body import CreditRequestBody
 from src.main.api.models.credit_response import CreditResponse
 from src.main.api.models.funded_credit_secret_user_context import FundedCreditSecretUserContext
 from src.main.api.models.user_account_context import UserAccountContext
-from src.main.api.utils.helpers.api_assertions import (
+from src.main.api.utils.api_assertions import (
     assert_bad_request,
     assert_created_model,
     assert_forbidden,

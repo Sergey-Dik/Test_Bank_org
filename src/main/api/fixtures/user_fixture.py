@@ -4,7 +4,7 @@ from src.main.api.classes.api_manager import ApiManager
 from src.main.api.generators.model_generator import RandomModelGenerator
 from src.main.api.generators.test_data_strategy import with_unique_username
 from src.main.api.models.create_user_request import CreateUserRequest
-from src.main.api.utils.helpers.setup_helpers import setup_user
+from src.main.api.utils.setup_helpers import setup_user
 
 
 @pytest.fixture

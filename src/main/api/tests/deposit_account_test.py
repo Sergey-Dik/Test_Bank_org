@@ -6,7 +6,7 @@ from src.main.api.db.assertions import DbAssertions
 from src.main.api.generators.amount_generator import random_deposit_amount
 from src.main.api.models.create_account_response import CreateAccountResponse
 from src.main.api.models.create_user_request import CreateUserRequest
-from src.main.api.utils.helpers.api_assertions import (
+from src.main.api.utils.api_assertions import (
     assert_bad_request,
     assert_ok_model,
     assert_unauthorized,

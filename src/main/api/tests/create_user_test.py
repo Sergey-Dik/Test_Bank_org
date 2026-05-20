@@ -8,7 +8,7 @@ from src.main.api.generators.model_generator import RandomModelGenerator
 from src.main.api.generators.test_data_strategy import with_unique_username
 from src.main.api.models.create_user_request import CreateUserRequest
 from src.main.api.models.create_user_response import CreateUserResponse
-from src.main.api.utils.helpers.api_assertions import assert_bad_request, assert_ok_model
+from src.main.api.utils.api_assertions import assert_bad_request, assert_ok_model
 
 
 @pytest.mark.api

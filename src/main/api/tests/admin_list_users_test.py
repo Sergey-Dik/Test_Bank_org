@@ -1,7 +1,7 @@
 import pytest
 
 from src.main.api.classes.api_manager import ApiManager
-from src.main.api.utils.helpers.api_assertions import assert_ok_json, assert_unauthorized
+from src.main.api.utils.api_assertions import assert_ok_json, assert_unauthorized
 
 
 @pytest.mark.api

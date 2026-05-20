@@ -26,7 +26,7 @@
 
 ## Контракты
 
-- Steps/requester выполняют HTTP и возвращают `Response`; проверки статуса и контракта — в тестах через `utils/helpers/api_assertions.py` (`assert_ok`, `assert_unauthorized`, …)
+- Steps/requester выполняют HTTP и возвращают `Response`; проверки статуса и контракта — в тестах через `utils/api_assertions.py` (`assert_ok`, `assert_unauthorized`, …)
 - Для разных форм ответа держите отдельные Pydantic-модели (например, `CreditRepayResponse`)
 
 ## CI-гейты
